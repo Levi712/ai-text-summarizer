@@ -1,24 +1,17 @@
 import streamlit as st
-from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import pipeline
 
 # Page setup
 st.set_page_config(page_title="AI Text Summarizer", page_icon="📝", layout="centered")
 
 st.title("📝 AI Text Summarizer")
 st.write("Paste a long piece of text below and get a short, AI-generated summary.")
-st.caption("Powered by a T5 model fine-tuned on the CNN/DailyMail dataset.")
-
-MODEL_NAME = "levi1234/t5-small-summarizer-cnn"
 
 
 # Load the summarization model (this downloads once and is cached afterwards)
 @st.cache_resource
 def load_model():
-    # use_fast=False avoids a known bug in newer transformers versions
-    # with this tokenizer's special tokens configuration
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
-    return pipeline("summarization", model=model, tokenizer=tokenizer)
+    return pipeline("summarization", model="facebook/bart-large-cnn")
 
 
 with st.spinner("Loading AI model... (this may take a minute the first time)"):
@@ -48,9 +41,8 @@ if st.button("Summarize"):
         )
     else:
         with st.spinner("Summarizing..."):
-            # T5 models expect a "summarize: " prefix
             result = summarizer(
-                "summarize: " + text,
+                text,
                 max_length=max_len,
                 min_length=min_len,
                 do_sample=False,
