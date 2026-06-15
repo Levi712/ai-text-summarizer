@@ -1,5 +1,5 @@
 import streamlit as st
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
 # Page setup
 st.set_page_config(page_title="AI Text Summarizer", page_icon="📝", layout="centered")
@@ -14,7 +14,11 @@ MODEL_NAME = "levi1234/t5-small-summarizer-cnn"
 # Load the summarization model (this downloads once and is cached afterwards)
 @st.cache_resource
 def load_model():
-    return pipeline("summarization", model=MODEL_NAME)
+    # use_fast=False avoids a known bug in newer transformers versions
+    # with this tokenizer's special tokens configuration
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
+    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+    return pipeline("summarization", model=model, tokenizer=tokenizer)
 
 
 with st.spinner("Loading AI model... (this may take a minute the first time)"):
